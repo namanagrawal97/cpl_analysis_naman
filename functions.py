@@ -90,7 +90,7 @@ def data_normalization(data,time,first_event,sampling_rate):
     
     data_norm=(data-mean)/std
     print('normalizing data')
-    return data_norm,time
+    return data_norm,time, data_before
 
 def alpha_band(data):
     b,a=butter(4, [8,12], fs=2000, btype='band')
