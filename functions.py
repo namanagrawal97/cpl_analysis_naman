@@ -329,12 +329,18 @@ def data_events_extract(data, time, epochs,sampling_rate):
  """
 import numpy as np
 
-def extract_trial_data(data, time, trial_timestamp, sampling_rate):
-    trial_index = np.where(time > trial_timestamp)[0][0]
-    data_trial_before = data[trial_index- 2 * sampling_rate:trial_index]
-    data_trial_after = data[trial_index:trial_index + 2 * sampling_rate]
-    print(f"Extracted trial data from index {trial_index} to {trial_index + 2 * sampling_rate}")
-    return data_trial_before, data_trial_after
+def extract_complete_trial_data(data, time, door_timestamp,dig_timestamp, sampling_rate):
+    door_index = np.where(time > door_timestamp)[0][0]
+    dig_index = np.where(time > dig_timestamp)[0][0]
+    data_complete_trial = data[door_index- 2 * sampling_rate:dig_index+ 2 * sampling_rate]
+    return data_complete_trial
+
+def extract_door_data(data, time, door_timestamp, sampling_rate):
+    door_index = np.where(time > door_timestamp)[0][0]
+    data_door_before = data[door_index- 2 * sampling_rate:door_index]
+    data_door_after = data[door_index:door_index + 2 * sampling_rate]
+    print(f"Extracted door data from index {door_index} to {door_index + 2 * sampling_rate}")
+    return data_door_before, data_door_after
 
 def extract_dig_data(data, time, dig_timestamp, sampling_rate):
     dig_index = np.where(time > dig_timestamp)[0][0]
