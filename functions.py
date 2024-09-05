@@ -39,6 +39,53 @@ def get_key_from_value(dictionary, target_value):
         if target_value in value:
             return key
     return None
+def clean_tasks(tasks):
+    """
+    Removes specified substrings from each task in the list and returns the cleaned list of tasks.
+    
+    Parameters:
+    tasks (list of str): The list of task strings to be cleaned.
+    
+    Returns:
+    list of str: The cleaned list of task strings.
+    """
+    substrings_to_remove = ['day2', 'os2', 'discard']
+    
+    for i, task in enumerate(tasks):
+        if any(substring in task for substring in substrings_to_remove):
+            #print(f"Original task: {task}")
+            
+            # Remove the substrings from task
+            for substring in substrings_to_remove:
+                task = task.replace(substring, '')
+            
+            # Optionally, strip any leading/trailing whitespace
+            task = task.strip()
+            
+            #print(f"Updated task: {task}")
+            tasks[i] = task
+    
+    return tasks
+def clean_task(task):
+    """
+    Removes specified substrings from the task string and returns the cleaned task.
+    
+    Parameters:
+    task (str): The task string to be cleaned.
+    
+    Returns:
+    str: The cleaned task string.
+    """
+    substrings_to_remove = ['day2', 'os2', 'discard']
+    
+    # Remove the substrings from task
+    for substring in substrings_to_remove:
+        task = task.replace(substring, '')
+    
+    # Strip any leading/trailing whitespace
+    task = task.strip()
+    
+    return task
 
 def iir_notch(data, fs, frequency, quality=15., axis=-1):
 
