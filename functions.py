@@ -380,7 +380,7 @@ def extract_complete_trial_data(data, time, door_timestamp,dig_timestamp, sampli
     door_index = np.where(time > door_timestamp)[0][0]
     dig_index = np.where(time > dig_timestamp)[0][0]
     data_complete_trial = data[door_index- 2 * sampling_rate:dig_index+ 2 * sampling_rate]
-    return data_complete_trial
+    return np.array(data_complete_trial,dtype=float)
 
 def extract_door_data(data, time, door_timestamp, sampling_rate):
     door_index = np.where(time > door_timestamp)[0][0]
