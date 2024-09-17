@@ -386,15 +386,18 @@ def extract_door_data(data, time, door_timestamp, sampling_rate):
     door_index = np.where(time > door_timestamp)[0][0]
     data_door_before = data[door_index- 2 * sampling_rate:door_index]
     data_door_after = data[door_index:door_index + 2 * sampling_rate]
-    print(f"Extracted door data from index {door_index} to {door_index + 2 * sampling_rate}")
+    #print(f"Extracted door data from index {door_index} to {door_index + 2 * sampling_rate}")
+    print(len(data_door_before),len(data_door_after))
+
     return data_door_before, data_door_after
 
 def extract_dig_data(data, time, dig_timestamp, sampling_rate):
     dig_index = np.where(time > dig_timestamp)[0][0]
     data_dig_after = data[dig_index:dig_index + 2 * sampling_rate]
     data_dig_before = data[dig_index - 2 * sampling_rate:dig_index]
-    print(f"Extracted dig data before from index {dig_index - 2 * sampling_rate} to {dig_index}")
-    print(f"Extracted dig data after from index {dig_index} to {dig_index + 2 * sampling_rate}")
+    #print(f"Extracted dig data before from index {dig_index - 2 * sampling_rate} to {dig_index}")
+    #print(f"Extracted dig data after from index {dig_index} to {dig_index + 2 * sampling_rate}")
+    print(len(data_dig_before),len(data_dig_after))
     return data_dig_before, data_dig_after
 
 def process_epoch(data, time, epochi, sampling_rate):
