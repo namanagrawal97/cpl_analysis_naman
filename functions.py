@@ -5,7 +5,15 @@ import matplotlib.pyplot as plt
 import pandas as pd
 
 def exp_params(string):
-    # Extract the parameters from the string
+    """
+    Extracts the date, mouse ID, and task from the given string.
+
+    Parameters:
+    string (str): The string from which to extract the parameters.
+
+    Returns:
+    tuple: A tuple containing the date, mouse ID, and task extracted from the string.
+    """    
     string = string.split('_')
     if len(string) >= 4:
         date = string[0]
@@ -218,163 +226,6 @@ def pad_sequences(sequences, maxlen):
         padded_sequences[i, :len(seq)] = seq
     return padded_sequences
 
-
-""" 
-def data_events_extract(data, time, epochs,sampling_rate):
-    Initialize empty lists to store trial data
-    white_trials = []
-    correct_in_white_after = []
-    incorrect_in_white_after = []
-    correct_in_white_before = []
-    incorrect_in_white_before = []
-    black_trials = []
-    correct_in_black_after = []
-    incorrect_in_black_after = []
-    correct_in_black_before = []
-    incorrect_in_black_before = []
-    no_context_trials = []
-    correct_in_no_context_after = []
-    incorrect_in_no_context_after = []
-    correct_in_no_context_before = []
-    incorrect_in_no_context_before = []
-
-    
-    Iterate through each epoch
-    
-    for epochi in epochs:
-        trial_timestamp = epochi[0][0]  # Get the timestamp of the trial
-        print(trial_timestamp)
-        
-        if epochi[0][1] == 119:  # Check if the trial is a white trial
-            trial_index = np.where(time > trial_timestamp)[0][0]  # Find the index of the trial start
-            data_trial = data[trial_index:trial_index + 2 * sampling_rate]  # Extract the trial data
-            white_trials.append(data_trial)  # Append the trial data to white_trials
-            
-            Iterate through the events within the epoch
-            for diggingi in range(1, epochi.shape[0]):
-                if epochi[diggingi][1] == 49:  # Check if the event is a correct dig
-                    dig_timestamp = epochi[diggingi][0]  # Get the timestamp of the dig
-                    dig_index = np.where(time > dig_timestamp)[0][0]  # Find the index of the dig
-                    
-                    Extract data before and after the dig
-                    data_dig_after = data[dig_index:dig_index + 2 * sampling_rate]
-                    data_dig_before = data[dig_index - 2 * sampling_rate:dig_index]
-                    data
-                    Append the data to the respective lists
-                    correct_in_white_before.append(data_dig_before)
-                    correct_in_white_after.append(data_dig_after)
-                
-                elif epochi[diggingi][1] == 48:  # Check if the event is an incorrect dig
-                    dig_timestamp = epochi[diggingi][0]  # Get the timestamp of the dig
-                    dig_index = np.where(time > dig_timestamp)[0][0]  # Find the index of the dig
-                    
-                    Extract data before and after the dig
-                    data_dig_after = data[dig_index:dig_index + 2 * sampling_rate]
-                    incorrect_in_white_after.append(data_dig_after)
-                    
-                    data_dig_before = data[dig_index - 2 * sampling_rate:dig_index]
-                    incorrect_in_white_before.append(data_dig_before)
-        
-        elif epochi[0][1] == 98:  # Check if the trial is a black trial
-            trial_index = np.where(time > trial_timestamp)[0][0]  # Find the index of the trial start
-            data_trial = data[trial_index:trial_index + 2 * sampling_rate]  # Extract the trial data
-            black_trials.append(data_trial)  # Append the trial data to black_trials
-            
-            Iterate through the events within the epoch
-            for diggingi in range(1, epochi.shape[0]):
-                if epochi[diggingi][1] == 49:  # Check if the event is a correct dig
-                    dig_timestamp = epochi[diggingi][0]  # Get the timestamp of the dig
-                    dig_index = np.where(time > dig_timestamp)[0][0]  # Find the index of the dig
-                    
-                    Extract data before and after the dig
-                    data_dig_after = data[dig_index:dig_index + 2 * sampling_rate]
-                    correct_in_black_after.append(data_dig_after)
-                    
-                    data_dig_before = data[dig_index - 2 * sampling_rate:dig_index]
-                    correct_in_black_before.append(data_dig_before)
-                
-                elif epochi[diggingi][1] == 48:  # Check if the event is an incorrect dig
-                    dig_timestamp = epochi[diggingi][0]  # Get the timestamp of the dig
-                    dig_index = np.where(time > dig_timestamp)[0][0]  # Find the index of the dig
-                    
-                    Extract data before and after the dig
-                    data_dig_after = data[dig_index:dig_index + 2 * sampling_rate]
-                    incorrect_in_black_after.append(data_dig_after)
-                    
-                    data_dig_before = data[dig_index - 2 * sampling_rate:dig_index]
-                    incorrect_in_black_before.append(data_dig_before)
-        
-        elif epochi[0][1] == 120:  # Check if the trial is a no context trial
-            trial_index = np.where(time > trial_timestamp)[0][0]  # Find the index of the trial start
-            data_trial = data[trial_index:trial_index + 2 * sampling_rate]  # Extract the trial data
-            no_context_trials.append(data_trial)  # Append the trial data to no_context_trials
-            
-            Iterate through the events within the epoch
-            for diggingi in range(1, epochi.shape[0]):
-                if epochi[diggingi][1] == 49:  # Check if the event is a correct dig
-                    dig_timestamp = epochi[diggingi][0]  # Get the timestamp of the dig
-                    dig_index = np.where(time > dig_timestamp)[0][0]  # Find the index of the dig
-                    
-                    Extract data before and after the dig
-                    data_dig_after = data[dig_index:dig_index + 2 * sampling_rate]
-                    correct_in_no_context_after.append(data_dig_after)
-                    
-                    data_dig_before = data[dig_index - 2 * sampling_rate:dig_index]
-                    correct_in_no_context_before.append(data_dig_before)
-                
-                elif epochi[diggingi][1] == 48:  # Check if the event is an incorrect dig
-                    dig_timestamp = epochi[diggingi][0]  # Get the timestamp of the dig
-                    dig_index = np.where(time > dig_timestamp)[0][0]  # Find the index of the dig
-                    
-                    Extract data before and after the dig
-                    data_dig_after = data[dig_index:dig_index + 2 * sampling_rate]
-                    incorrect_in_no_context_after.append(data_dig_after)
-                    
-                    data_dig_before = data[dig_index - 2 * sampling_rate:dig_index]
-                    incorrect_in_no_context_before.append(data_dig_before)
-        Convert lists to NumPy arrays
-    white_trials = np.array(white_trials)
-    black_trials = np.array(black_trials)
-    no_context_trials = np.array(no_context_trials)
-    
-    maxlen = max(
-        max((len(seq) for seq in correct_in_white_before), default=0),
-        max((len(seq) for seq in incorrect_in_white_before), default=0),
-        max((len(seq) for seq in correct_in_white_after), default=0),
-        max((len(seq) for seq in incorrect_in_white_after), default=0),
-        max((len(seq) for seq in correct_in_black_before), default=0),
-        max((len(seq) for seq in incorrect_in_black_before), default=0),
-        max((len(seq) for seq in correct_in_black_after), default=0),
-        max((len(seq) for seq in incorrect_in_black_after), default=0),
-        max((len(seq) for seq in correct_in_no_context_before), default=0),
-        max((len(seq) for seq in incorrect_in_no_context_before), default=0),
-        max((len(seq) for seq in correct_in_no_context_after), default=0),
-        max((len(seq) for seq in incorrect_in_no_context_after), default=0)
-    )
-    
-    Pad the sequences to the maximum length
-    correct_in_white_before = pad_sequences(correct_in_white_before, maxlen)
-    incorrect_in_white_before = pad_sequences(incorrect_in_white_before, maxlen)
-    correct_in_white_after = pad_sequences(correct_in_white_after, maxlen)
-    incorrect_in_white_after = pad_sequences(incorrect_in_white_after, maxlen)
-    correct_in_black_before = pad_sequences(correct_in_black_before, maxlen)
-    incorrect_in_black_before = pad_sequences(incorrect_in_black_before, maxlen)
-    correct_in_black_after = pad_sequences(correct_in_black_after, maxlen)
-    incorrect_in_black_after = pad_sequences(incorrect_in_black_after, maxlen)
-    correct_in_no_context_before = pad_sequences(correct_in_no_context_before, maxlen)
-    incorrect_in_no_context_before = pad_sequences(incorrect_in_no_context_before, maxlen)
-    correct_in_no_context_after = pad_sequences(correct_in_no_context_after, maxlen)
-    incorrect_in_no_context_after = pad_sequences(incorrect_in_no_context_after, maxlen)
-
-    return (white_trials, black_trials, no_context_trials,
-            correct_in_white_before, incorrect_in_white_before,
-            correct_in_white_after, incorrect_in_white_after,
-            correct_in_black_before, incorrect_in_black_before,
-            correct_in_black_after, incorrect_in_black_after,
-            correct_in_no_context_before, incorrect_in_no_context_before,
-            correct_in_no_context_after, incorrect_in_no_context_after)
- """
-import numpy as np
 
 def extract_complete_trial_data(data, time, door_timestamp,dig_timestamp, sampling_rate):
     door_index = np.where(time > door_timestamp)[0][0]
