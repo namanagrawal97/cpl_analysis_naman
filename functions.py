@@ -26,6 +26,64 @@ def exp_params(string):
 
     return date, mouse_id, task
 
+def identify_events_channel(f, channels):
+    """
+    Identify the events channel based on the given channels.
+
+    Parameters:
+    f : the data file.
+    channels (list): the list of channels in the data file.
+
+    Returns:
+    events(array): The events annotations from data file.
+    """
+    if 'Keyboard' in channels:
+        events = f['Keyboard']
+    elif 'keyboard' in channels:
+        events = f['keyboard']
+    elif 'memory' in channels:
+        events = f['memory']
+    elif 'Memory' in channels:
+        events = f['Memory']
+    return events
+
+def generate_epochs_with_first_event(events, time):
+    """
+    Generate epochs with the first event.
+    Parameters:
+    - events (numpy.ndarray): Array of events.
+    - time (numpy.ndarray): Array of time values.
+    Returns:
+    - epochs (list): List of epochs, where each epoch is a numpy.ndarray containing two rows.
+    """
+    pass
+    
+    
+    valid_events = [98, 119, 120, 48, 49]
+    events_concat = np.vstack((time, events)).T
+    events_concat = events_concat[np.isin(events_concat[:, 1], valid_events)]
+    
+    epochs = []
+
+    # Initialize variables to track the start of an epoch
+    start_index = None
+
+    # Iterate through events_concat
+    for i, event in enumerate(events_concat):
+        if event[1] == 119 or event[1] == 98 or event[1] == 120:
+            if start_index is None:
+                # Start a new epoch
+                start_index = i
+            else:
+                # End the current epoch
+                end_index = i
+                epoch = events_concat[start_index:end_index]
+                if epoch.shape[0] > 1:
+                    epoch = epoch[:2]  # Ensure the epoch has only 2 rows
+                    epochs.append(epoch)
+                start_index = None
+    return epochs
+
 def create_channel_dict(channels):
     channel_dict = {
         channel: (
@@ -161,11 +219,13 @@ def beta_band(data,sampling_rate):
     data_filtered=filtfilt(b,a,data)
     print('filtering beta band')
     return data_filtered
+
 def gamma_band(data,sampling_rate):
     b,a=butter(4, [30,80], fs=sampling_rate, btype='band')
     data_filtered=filtfilt(b,a,data)
     print('filtering gamma band')
     return data_filtered
+
 def theta_band(data,sampling_rate):
     b,a=butter(4, [4,12], fs=sampling_rate, btype='band')
     data_filtered=filtfilt(b,a,data)
@@ -192,33 +252,7 @@ def generate_epochs(events,time):
                 epochs.append(epoch)
                 start_index = None
     return epochs
-def generate_epochs_with_first_event(events, time):
-    
-    
-    valid_events = [98, 119, 120, 48, 49]
-    events_concat = np.vstack((time, events)).T
-    events_concat = events_concat[np.isin(events_concat[:, 1], valid_events)]
-    
-    epochs = []
 
-    # Initialize variables to track the start of an epoch
-    start_index = None
-
-    # Iterate through events_concat
-    for i, event in enumerate(events_concat):
-        if event[1] == 119 or event[1] == 98 or event[1] == 120:
-            if start_index is None:
-                # Start a new epoch
-                start_index = i
-            else:
-                # End the current epoch
-                end_index = i
-                epoch = events_concat[start_index:end_index]
-                if epoch.shape[0] > 1:
-                    epoch = epoch[:2]  # Ensure the epoch has only 2 rows
-                    epochs.append(epoch)
-                start_index = None
-    return epochs
 
 def pad_sequences(sequences, maxlen):
     padded_sequences = np.zeros((len(sequences), maxlen))
