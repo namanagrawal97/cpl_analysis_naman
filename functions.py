@@ -194,11 +194,11 @@ def frequency_domain(data, time):
     return faxis, Sxx.real
 
 def data_normalization(data,time,first_event,sampling_rate):
-    data_before=data[np.where(time>first_event)[0][0]-30*sampling_rate:np.where(time>first_event)[0][0]]
-
+    if first_event>30.0:
+        data_before=data[np.where(time>first_event)[0][0]-30*sampling_rate:np.where(time>first_event)[0][0]]
+    else:
+        data_before=data[0:np.where(time>first_event)[0][0]]
     mean=np.mean(data_before)
-    data_before=data_before-mean
-
     std=np.std(data_before)
     
     data_norm=(data-mean)/std
