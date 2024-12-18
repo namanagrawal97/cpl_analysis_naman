@@ -193,6 +193,22 @@ def frequency_domain(data, time):
     faxis = np.arange(0,fNQ,df)[:len(Sxx)]
     return faxis, Sxx.real
 
+def baseline_data_normalization(data,time,first_event,sampling_rate):
+    if first_event>30.0:
+        baseline_data=data[np.where(time>first_event)[0][0]-30*sampling_rate:np.where(time>first_event)[0][0]]
+    else:
+        baseline_data=data[0:np.where(time>first_event)[0][0]]
+    baseline_mean=np.mean(baseline_data)
+    baseline_std=np.std(baseline_data)
+    
+    baseline_data_norm=(baseline_data-baseline_mean)/baseline_std
+    print('normalizing data')
+    return baseline_data_norm,time, baseline_mean, baseline_std
+
+def zscore_event_data(data,baseline_mean, baseline_std):
+    data_zscored = (data - baseline_mean) / baseline_std
+    return data_zscored
+
 def data_normalization(data,time,first_event,sampling_rate):
     if first_event>30.0:
         baseline_data=data[np.where(time>first_event)[0][0]-30*sampling_rate:np.where(time>first_event)[0][0]]
