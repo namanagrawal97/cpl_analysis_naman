@@ -206,7 +206,8 @@ def baseline_data_normalization(data,time,first_event,sampling_rate):
     return baseline_data_norm,time, baseline_mean, baseline_std
 
 def zscore_event_data(data,baseline_mean, baseline_std):
-    data_zscored = (data - baseline_mean) / baseline_std
+    data_mean=np.mean(data)
+    data_zscored = (data - data_mean) / baseline_std
     return data_zscored
 
 def data_normalization(data,time,first_event,sampling_rate):
