@@ -84,6 +84,44 @@ def generate_epochs_with_first_event(events, time):
                 start_index = None
     return epochs
 
+def generate_specific_num_of_epochs_with_first_event(events, time, num_epochs):
+    """
+    Generate epochs with the first event.
+    Parameters:
+    - events (numpy.ndarray): Array of events.
+    - time (numpy.ndarray): Array of time values.
+    Returns:
+    - epochs (list): List of epochs, where each epoch is a numpy.ndarray containing two rows.
+    """
+    pass
+    
+    
+    valid_events = [98, 119, 120, 48, 49]
+    events_concat = np.vstack((time, events)).T
+    events_concat = events_concat[np.isin(events_concat[:, 1], valid_events)]
+    
+    epochs = []
+
+    # Initialize variables to track the start of an epoch
+    start_index = None
+
+    # Iterate through events_concat
+    for i, event in enumerate(events_concat):
+        if event[1] == 119 or event[1] == 98 or event[1] == 120:
+            if start_index is None:
+                # Start a new epoch
+                start_index = i
+            else:
+                # End the current epoch
+                end_index = i
+                epoch = events_concat[start_index:end_index]
+                if epoch.shape[0] > 1:
+                    epoch = epoch[:2]  # Ensure the epoch has only 2 rows
+                    epochs.append(epoch)
+                start_index = None
+    return epochs[0:num_epochs]
+
+
 def create_channel_dict(channels):
     channel_dict = {
         channel: (
