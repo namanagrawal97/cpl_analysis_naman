@@ -191,7 +191,7 @@ def clean_task(task):
     
     return task
 
-def iir_notch(data, fs, frequency, quality=15., axis=-1):
+def iir_notch(data, fs, frequency, quality=5., axis=-1):
 
     norm_freq = frequency/(fs/2)
     b, a = iirnotch(norm_freq, quality)
