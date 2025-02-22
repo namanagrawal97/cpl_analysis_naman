@@ -121,7 +121,43 @@ def generate_specific_num_of_epochs_with_first_event(events, time, num_epochs):
                 start_index = None
     return epochs[0:num_epochs]
 
+def generate_epochs_with_all_digs(events, time):
+    
+    pass
+    
+    
+    valid_events = [98, 119, 120, 48, 49]
+    events_concat = np.vstack((time, events)).T
+    events_concat = events_concat[np.isin(events_concat[:, 1], valid_events)]
+    
+    epochs = []
 
+    # Initialize variables to track the start of an epoch
+    start_index = None
+
+    # Iterate through events_concat
+    for i, event in enumerate(events_concat):
+        if event[1] == 119 or event[1] == 98 or event[1] == 120:
+            if start_index is None:
+                # Start a new epoch
+                start_index = i
+            else:
+                # End the current epoch
+                end_index = i
+                epoch = events_concat[start_index:end_index]
+                epochs.append(epoch)
+                start_index = None
+    return epochs
+def find_correct_dig(epoch):
+    """
+    Find the correct dig in the given epoch.
+    Parameters:
+    - epoch (numpy.ndarray): The epoch to search for the correct dig.
+    Returns:
+    - correct_dig (numpy.ndarray): The correct dig in the epoch.
+    """
+    correct_dig = epoch[epoch[:, 1] == 49]
+    return correct_dig
 def create_channel_dict(channels):
     channel_dict = {
         channel: (
