@@ -268,8 +268,8 @@ def frequency_domain(data, time):
     return faxis, Sxx.real
 
 def baseline_data_normalization(data,time,first_event,sampling_rate):
-    if first_event>30.0:
-        baseline_data=data[np.where(time>first_event)[0][0]-30*sampling_rate:np.where(time>first_event)[0][0]]
+    if first_event>2.0:
+        baseline_data=data[np.where(time>first_event)[0][0]-2*sampling_rate:np.where(time>first_event)[0][0]]
     else:
         baseline_data=data[0:np.where(time>first_event)[0][0]]
     baseline_mean=np.mean(baseline_data)
@@ -295,6 +295,11 @@ def data_normalization(data,time,first_event,sampling_rate):
     data_norm=(data-mean)/std
     print('normalizing data')
     return data_norm,time, baseline_data
+
+def freq_band(data,low,high,sampling_rate):
+    b,a=butter(3, [low,high], fs=sampling_rate, btype='band')
+    data_filtered=filtfilt(b,a,data, padlen=500)
+    return data_filtered
 
 def alpha_band(data):
     b,a=butter(4, [8,12], fs=2000, btype='band')
