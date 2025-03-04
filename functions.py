@@ -174,6 +174,22 @@ def create_channel_dict(channels):
         for channel in channels
     }
     return channel_dict
+def get_keyboard_and_ref_channels(f, channels):
+    if 'Keyboard' in channels:
+        events = f['Keyboard']
+    elif 'keyboard' in channels:
+        events = f['keyboard']
+    elif 'memory' in channels:
+        events = f['memory']
+    elif 'Memory' in channels:
+        events = f['Memory']
+    if 'Ref' in channels:
+        reference_electrode = f['Ref']
+    elif 'ref' in channels:
+        reference_electrode = f['ref']
+    elif 'REF' in channels:
+        reference_electrode = f['REF']
+    return events, reference_electrode
 def get_key_from_value(dictionary, target_value):
     for key, value in dictionary.items():
         if target_value in value:
@@ -348,6 +364,28 @@ def generate_epochs(events,time):
                 epochs.append(epoch)
                 start_index = None
     return epochs
+def find_global_start_end_times(f,channels):
+    # Find global start and end times
+    global_start_time = float('inf')
+    global_end_time = float('-inf')
+
+    for channeli in channels:
+        if "AON" in channeli or "vHp" in channeli or 'Ref' in channeli:
+            data_all = f[channeli]
+            raw_time = np.array(data_all['times']).flatten()
+            global_start_time = min(global_start_time, raw_time[0])
+            global_end_time = max(global_end_time, raw_time[-1])
+    return global_start_time, global_end_time
+def pad_raw_data_raw_time(data, time, global_start_time, global_end_time, sampling_rate=2000):
+    
+    total_points = int((global_end_time - global_start_time) * sampling_rate) + 1
+    padded_data = np.zeros(total_points)
+    start_index = int((time[0] - global_start_time) * sampling_rate)
+    end_index = start_index + len(data)
+    padded_data[start_index:end_index] = data
+    padded_time = np.linspace(global_start_time, global_end_time, total_points)
+    return padded_data, padded_time
+
 
 
 def pad_sequences(sequences, maxlen):
@@ -368,7 +406,7 @@ def extract_door_data(data, time, door_timestamp, sampling_rate):
     data_door_before = data[door_index- 2 * sampling_rate:door_index]
     data_door_after = data[door_index:door_index + 2 * sampling_rate]
     #print(f"Extracted door data from index {door_index} to {door_index + 2 * sampling_rate}")
-    print(len(data_door_before),len(data_door_after))
+    #print(len(data_door_before),len(data_door_after))
 
     return data_door_before, data_door_after
 
@@ -378,7 +416,7 @@ def extract_dig_data(data, time, dig_timestamp, sampling_rate):
     data_dig_before = data[dig_index - 2 * sampling_rate:dig_index]
     #print(f"Extracted dig data before from index {dig_index - 2 * sampling_rate} to {dig_index}")
     #print(f"Extracted dig data after from index {dig_index} to {dig_index + 2 * sampling_rate}")
-    print(len(data_dig_before),len(data_dig_after))
+    #print(len(data_dig_before),len(data_dig_after))
     return data_dig_before, data_dig_after
 
 def process_epoch(data, time, epochi, sampling_rate):
