@@ -314,7 +314,7 @@ def data_normalization(data,time,first_event,sampling_rate):
 
 def freq_band(data,low,high,sampling_rate):
     b,a=butter(3, [low,high], fs=sampling_rate, btype='band')
-    data_filtered=filtfilt(b,a,data, padlen=500)
+    data_filtered=filtfilt(b,a,data)
     return data_filtered
 
 def alpha_band(data):
