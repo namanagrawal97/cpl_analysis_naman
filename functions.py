@@ -316,6 +316,12 @@ def freq_band(data,low,high,sampling_rate):
     b,a=butter(3, [low,high], fs=sampling_rate, btype='band')
     data_filtered=filtfilt(b,a,data)
     return data_filtered
+def get_band_power(data, band_start, band_end):
+    freq_axs = np.linspace(0, 1000, len(data))
+    band_data = data[(freq_axs >= band_start) & (freq_axs <= band_end)]
+    power_sum = np.sum(band_data)
+    freq_diff = freq_axs[1] - freq_axs[0]
+    return power_sum * freq_diff
 
 def alpha_band(data):
     b,a=butter(4, [8,12], fs=2000, btype='band')
