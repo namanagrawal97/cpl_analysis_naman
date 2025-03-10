@@ -3,7 +3,9 @@ from numpy.fft import rfft,fft
 import numpy as np
 import matplotlib.pyplot as plt
 import pandas as pd
-
+import mne_connectivity
+import mne
+import os
 def exp_params(string):
     """
     Extracts the date, mouse ID, and task from the given string.
@@ -425,182 +427,7 @@ def extract_dig_data(data, time, dig_timestamp, sampling_rate):
     #print(len(data_dig_before),len(data_dig_after))
     return data_dig_before, data_dig_after
 
-def process_epoch(data, time, epochi, sampling_rate):
-    white_trials_before = []
-    white_trials_after = []
-    correct_in_white_after = []
-    incorrect_in_white_after = []
-    correct_in_white_before = []
-    incorrect_in_white_before = []
-    
-    black_trials_before = []
-    black_trials_after = []
-    correct_in_black_after = []
-    incorrect_in_black_after = []
-    correct_in_black_before = []
-    incorrect_in_black_before = []
-    
-    no_context_trials_before = []
-    no_context_trials_after = []
-    correct_in_no_context_after = []
-    incorrect_in_no_context_after = []
-    correct_in_no_context_before = []
-    incorrect_in_no_context_before = []
-    
-    if epochi.shape[0] > 1:
-        epochi = epochi[:2]
-        trial_timestamp = epochi[0][0]
-        trial_type = epochi[0][1]
-        print(f"Processing epoch with trial timestamp {trial_timestamp} and trial type {trial_type}")
-        
-        if trial_type == 119:
-            data_trial_before, data_trial_after = extract_trial_data(data, time, trial_timestamp, sampling_rate)
-            white_trials_before.append(data_trial_before)
-            white_trials_after.append(data_trial_after)
 
-            dig_type = epochi[1, 1]
-            dig_timestamp = epochi[1, 0]
-            data_dig_before, data_dig_after = extract_dig_data(data, time, dig_timestamp, sampling_rate)
-            if dig_type == 49:
-                correct_in_white_before.append(data_dig_before)
-                correct_in_white_after.append(data_dig_after)
-            elif dig_type == 48:
-                incorrect_in_white_before.append(data_dig_before)
-                incorrect_in_white_after.append(data_dig_after)
-        elif trial_type == 98:
-            data_trial_before, data_trial_after = extract_trial_data(data, time, trial_timestamp, sampling_rate)
-            black_trials_before.append(data_trial_before)
-            black_trials_after.append(data_trial_after)
-
-            dig_type = epochi[1, 1]
-            dig_timestamp = epochi[1, 0]
-            data_dig_before, data_dig_after = extract_dig_data(data, time, dig_timestamp, sampling_rate)
-            if dig_type == 49:
-                correct_in_black_before.append(data_dig_before)
-                correct_in_black_after.append(data_dig_after)
-            elif dig_type == 48:
-                incorrect_in_black_before.append(data_dig_before)
-                incorrect_in_black_after.append(data_dig_after)
-        elif trial_type == 120:
-            data_trial_before, data_trial_after = extract_trial_data(data, time, trial_timestamp, sampling_rate)
-            no_context_trials_before.append(data_trial_before)
-            no_context_trials_after.append(data_trial_after)
-
-            dig_type = epochi[1, 1]
-            dig_timestamp = epochi[1, 0]
-            data_dig_before, data_dig_after = extract_dig_data(data, time, dig_timestamp, sampling_rate)
-            if dig_type == 49:
-                correct_in_no_context_before.append(data_dig_before)
-                correct_in_no_context_after.append(data_dig_after)
-            elif dig_type == 48:
-                incorrect_in_no_context_before.append(data_dig_before)
-                incorrect_in_no_context_after.append(data_dig_after)
-
-    return (white_trials_before, black_trials_before, white_trials_after, black_trials_after,
-            no_context_trials_before, no_context_trials_after,
-            correct_in_white_before, incorrect_in_white_before,
-            correct_in_white_after, incorrect_in_white_after,
-            correct_in_black_before, incorrect_in_black_before,
-            correct_in_black_after, incorrect_in_black_after,
-            correct_in_no_context_before, incorrect_in_no_context_before,
-            correct_in_no_context_after, incorrect_in_no_context_after)
-
-
-def pad_sequences(sequences, maxlen):
-    padded_sequences = np.zeros((len(sequences), maxlen))
-    for i, seq in enumerate(sequences):
-        padded_sequences[i, :len(seq)] = seq
-    print(f"Padded sequences to max length {maxlen}")
-    return padded_sequences
-
-def data_events_extract(data, time, epochs, sampling_rate):
-    all_white_trials_before = []
-    all_black_trials_before = []
-    all_no_context_trials_before = []
-    all_white_trials_after = []
-    all_black_trials_after = []
-    all_no_context_trials_after = []
-    all_correct_in_white_before = []
-    all_incorrect_in_white_before = []
-    all_correct_in_white_after = []
-    all_incorrect_in_white_after = []
-    all_correct_in_black_before = []
-    all_incorrect_in_black_before = []
-    all_correct_in_black_after = []
-    all_incorrect_in_black_after = []
-    all_correct_in_no_context_before = []
-    all_incorrect_in_no_context_before = []
-    all_correct_in_no_context_after = []
-    all_incorrect_in_no_context_after = []
-
-    for epochi in epochs:
-        print(f"Processing epoch: {epochi}")
-        (white_trials_before, black_trials_before, white_trials_after, black_trials_after,
-         no_context_trials_before, no_context_trials_after,
-         correct_in_white_before, incorrect_in_white_before,
-         correct_in_white_after, incorrect_in_white_after,
-         correct_in_black_before, incorrect_in_black_before,
-         correct_in_black_after, incorrect_in_black_after,
-         correct_in_no_context_before, incorrect_in_no_context_before,
-         correct_in_no_context_after, incorrect_in_no_context_after) = process_epoch(data, time, epochi, sampling_rate)
-
-        all_white_trials_before.extend(white_trials_before)
-        all_black_trials_before.extend(black_trials_before)
-        all_no_context_trials_before.extend(no_context_trials_before)
-        all_white_trials_after.extend(white_trials_after)
-        all_black_trials_after.extend(black_trials_after)
-        all_no_context_trials_after.extend(no_context_trials_after)
-        all_correct_in_white_before.extend(correct_in_white_before)
-        all_incorrect_in_white_before.extend(incorrect_in_white_before)
-        all_correct_in_white_after.extend(correct_in_white_after)
-        all_incorrect_in_white_after.extend(incorrect_in_white_after)
-        all_correct_in_black_before.extend(correct_in_black_before)
-        all_incorrect_in_black_before.extend(incorrect_in_black_before)
-        all_correct_in_black_after.extend(correct_in_black_after)
-        all_incorrect_in_black_after.extend(incorrect_in_black_after)
-        all_correct_in_no_context_before.extend(correct_in_no_context_before)
-        all_incorrect_in_no_context_before.extend(incorrect_in_no_context_before)
-        all_correct_in_no_context_after.extend(correct_in_no_context_after)
-        all_incorrect_in_no_context_after.extend(incorrect_in_no_context_after)
-
-    maxlen = max(
-        max((len(seq) for seq in all_correct_in_white_before), default=0),
-        max((len(seq) for seq in all_incorrect_in_white_before), default=0),
-        max((len(seq) for seq in all_correct_in_white_after), default=0),
-        max((len(seq) for seq in all_incorrect_in_white_after), default=0),
-        max((len(seq) for seq in all_correct_in_black_before), default=0),
-        max((len(seq) for seq in all_incorrect_in_black_before), default=0),
-        max((len(seq) for seq in all_correct_in_black_after), default=0),
-        max((len(seq) for seq in all_incorrect_in_black_after), default=0),
-        max((len(seq) for seq in all_correct_in_no_context_before), default=0),
-        max((len(seq) for seq in all_incorrect_in_no_context_before), default=0),
-        max((len(seq) for seq in all_correct_in_no_context_after), default=0),
-        max((len(seq) for seq in all_incorrect_in_no_context_after), default=0)
-    )
-    print(f"Max length for padding: {maxlen}")
-
-    all_correct_in_white_before = pad_sequences(all_correct_in_white_before, maxlen)
-    all_incorrect_in_white_before = pad_sequences(all_incorrect_in_white_before, maxlen)
-    all_correct_in_white_after = pad_sequences(all_correct_in_white_after, maxlen)
-    all_incorrect_in_white_after = pad_sequences(all_incorrect_in_white_after, maxlen)
-    all_correct_in_black_before = pad_sequences(all_correct_in_black_before, maxlen)
-    all_incorrect_in_black_before = pad_sequences(all_incorrect_in_black_before, maxlen)
-    all_correct_in_black_after = pad_sequences(all_correct_in_black_after, maxlen)
-    all_incorrect_in_black_after = pad_sequences(all_incorrect_in_black_after, maxlen)
-    all_correct_in_no_context_before = pad_sequences(all_correct_in_no_context_before, maxlen)
-    all_incorrect_in_no_context_before = pad_sequences(all_incorrect_in_no_context_before, maxlen)
-    all_correct_in_no_context_after = pad_sequences(all_correct_in_no_context_after, maxlen)
-    all_incorrect_in_no_context_after = pad_sequences(all_incorrect_in_no_context_after, maxlen)
-
-    print("Data extraction and padding complete")
-    return (np.array(all_white_trials_before), np.array(all_black_trials_before), np.array(all_no_context_trials_before),
-            np.array(all_white_trials_after), np.array(all_black_trials_after), np.array(all_no_context_trials_after),
-            all_correct_in_white_before, all_incorrect_in_white_before,
-            all_correct_in_white_after, all_incorrect_in_white_after,
-            all_correct_in_black_before, all_incorrect_in_black_before,
-            all_correct_in_black_after, all_incorrect_in_black_after,
-            all_correct_in_no_context_before, all_incorrect_in_no_context_before,
-            all_correct_in_no_context_after, all_incorrect_in_no_context_after)
 
 def divide_data_in_epochs(data,time,epochs,sampling_rate):
     white_trials = []
@@ -624,3 +451,30 @@ def divide_data_in_epochs(data,time,epochs,sampling_rate):
 def calculate_power_1D(signal):
     power = np.sum(signal ** 2) / len(signal)
     return power
+
+def convert_epoch_to_coherence(epoch):
+    band_dict={'theta':[4,8],'beta':[12,30],'gamma':[30,100],'total':[1,100]}
+    coherence_dict={}
+    for band in band_dict.keys():
+
+        fmin=band_dict[band][0]
+        fmax=band_dict[band][1]
+        freqs = np.arange(fmin,fmax)
+        n_cycles = freqs/2
+        con=mne_connectivity.spectral_connectivity_time(epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,faverage=True, mode='cwt_morlet', verbose=False, n_cycles=n_cycles,freqs=freqs)
+        coh = con.get_data(output='dense')
+        indices = con.names
+        aon_vhp_con=[]
+
+        for i in range(coh.shape[1]):
+            for j in range(coh.shape[2]):
+                if 'AON' in indices[j] and 'vHp' in indices[i]:
+                    aon_vhp_con.append(coh[0,i,j,:])
+                else:
+                    continue
+        if aon_vhp_con==[]:
+            print('no coherence found')
+        else:
+            aon_vhp_con_mean=np.mean(aon_vhp_con, axis=0)
+            coherence_dict[band]=aon_vhp_con_mean[0]
+    return coherence_dict
