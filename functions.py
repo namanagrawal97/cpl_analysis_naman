@@ -463,18 +463,51 @@ def convert_epoch_to_coherence(epoch):
         n_cycles = freqs/2
         con=mne_connectivity.spectral_connectivity_time(epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,faverage=True, mode='cwt_morlet', verbose=False, n_cycles=n_cycles,freqs=freqs)
         coh = con.get_data(output='dense')
+        #print(coh)
         indices = con.names
+        #print(indices)
         aon_vhp_con=[]
-
+        #print(coh.shape)
         for i in range(coh.shape[1]):
             for j in range(coh.shape[2]):
+                print(i,j)
                 if 'AON' in indices[j] and 'vHp' in indices[i]:
+                    print('AON and vHp found')
                     aon_vhp_con.append(coh[0,i,j,:])
+                    print(coh[0,i,j,:])
                 else:
                     continue
         if aon_vhp_con==[]:
             print('no coherence found')
         else:
+            #print(aon_vhp_con)
             aon_vhp_con_mean=np.mean(aon_vhp_con, axis=0)
+            #print(aon_vhp_con_mean, 'coherenece')
             coherence_dict[band]=aon_vhp_con_mean[0]
     return coherence_dict
+
+def convert_epoch_to_coherence_behavior(epoch, band_start, band_end):
+    fmin = band_start
+    fmax = band_end
+    freqs = np.arange(fmin, fmax)
+    n_cycles = freqs / 2
+    con = mne_connectivity.spectral_connectivity_time(
+        epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,
+        faverage=True, mode='cwt_morlet', verbose=False, n_cycles=n_cycles, freqs=freqs
+    )
+    coh = con.get_data(output='dense')
+    indices = con.names
+    aon_vhp_con = []
+
+    for i in range(coh.shape[1]):
+        for j in range(coh.shape[2]):
+            if 'AON' in indices[i] and 'vHp' in indices[j]:
+                aon_vhp_con.append(coh[0, i, j, :])
+
+    if not aon_vhp_con:  # If the list is empty
+        print('No coherence found')
+        aon_vhp_con_mean = np.zeros_like(freqs)  # Assign a default value (e.g., zeros)
+    else:
+        aon_vhp_con_mean = np.mean(aon_vhp_con, axis=0)
+
+    return aon_vhp_con_mean[0]
