@@ -542,3 +542,30 @@ def convert_epoch_to_coherence_behavior(epoch, band_start, band_end):
         aon_vhp_con_mean = np.mean(aon_vhp_con, axis=0)
 
     return aon_vhp_con_mean[0]
+
+
+def convert_epoch_to_coherence_behavior_short_signal(epoch, band_start, band_end):
+    fmin = band_start
+    fmax = band_end
+    freqs = np.arange(fmin, fmax)
+    n_cycles = freqs / 3
+    con = mne_connectivity.spectral_connectivity_time(
+        epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,
+        faverage=True, mode='cwt_morlet', verbose=True, n_cycles=n_cycles, freqs=freqs
+    )
+    coh = con.get_data(output='dense')
+    indices = con.names
+    aon_vhp_con = []
+
+    for i in range(coh.shape[1]):
+        for j in range(coh.shape[2]):
+            if 'AON' in indices[i] and 'vHp' in indices[j]:
+                aon_vhp_con.append(coh[0, i, j, :])
+
+    if not aon_vhp_con:  # If the list is empty
+        print('No coherence found')
+        aon_vhp_con_mean = np.zeros_like(freqs)  # Assign a default value (e.g., zeros)
+    else:
+        aon_vhp_con_mean = np.mean(aon_vhp_con, axis=0)
+
+    return aon_vhp_con_mean[0]
