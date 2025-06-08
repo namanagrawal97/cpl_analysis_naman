@@ -242,7 +242,6 @@ def clean_task(task):
     
     # Strip any leading/trailing whitespace
     task = task.strip()
-    
     return task
 
 def iir_notch(data, fs, frequency, quality=30., axis=-1):
