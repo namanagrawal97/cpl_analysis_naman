@@ -115,9 +115,10 @@ def baseline_data_normalization(data,time,first_event,sampling_rate):
 def extract_event_data(data, time, event_timestamp, sampling_rate, truncation_time):
     event_index = np.where(time > event_timestamp)[0][0]
     bound=int(float(truncation_time) * sampling_rate)
-    data_event_before = data[event_index- bound * sampling_rate:event_index]
-    data_event_after = data[event_index:event_index + bound * sampling_rate]
+    data_event_before = data[event_index- bound :event_index]
+    data_event_after = data[event_index:event_index + bound]
     return data_event_before, data_event_after
+
 def extract_complete_trial_data(data, time, door_timestamp,dig_timestamp, sampling_rate, truncation_time):
     door_index = np.where(time > door_timestamp)[0][0]
     dig_index = np.where(time > dig_timestamp)[0][0]
