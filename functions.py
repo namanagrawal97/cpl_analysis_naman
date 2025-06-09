@@ -524,7 +524,7 @@ def convert_epoch_to_coherence_behavior(epoch, band_start, band_end):
     fmin = band_start
     fmax = band_end
     freqs = np.arange(fmin, fmax)
-    n_cycles = freqs / 2
+    n_cycles = freqs / 3
     con = mne_connectivity.spectral_connectivity_time(
         epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,
         faverage=True, mode='cwt_morlet', verbose=False, n_cycles=n_cycles, freqs=freqs
@@ -536,7 +536,9 @@ def convert_epoch_to_coherence_behavior(epoch, band_start, band_end):
     for i in range(coh.shape[1]):
         for j in range(coh.shape[2]):
             if 'AON' in indices[i] and 'vHp' in indices[j]:
-                aon_vhp_con.append(coh[0, i, j, :])
+                coherence= coh[0, i, j, :]
+                coherence = np.arctanh(coherence)  # Convert to Fisher Z-score
+                aon_vhp_con.append(coherence)
 
     if not aon_vhp_con:  # If the list is empty
         print('No coherence found')
