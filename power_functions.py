@@ -3,6 +3,7 @@ from scipy import signal
 import scipy.signal
 import pandas as pd
 def apply_welch_transform(data_array):
+    print(data_array.shape)
     length= data_array.shape[0]
     if length < 2:
         raise ValueError("Data array must have at least two elements for Welch's method.")
