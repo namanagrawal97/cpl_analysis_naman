@@ -5,7 +5,7 @@ def convert_epoch_to_coherence_density(epoch, fmin=1, fmax=100):
 
     freqs = np.arange(fmin,fmax)
     n_cycles = freqs/3
-    con=mne_connectivity.spectral_connectivity_time(epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,faverage=False, mode='cwt_morlet', verbose=False, n_cycles=n_cycles,freqs=freqs)
+    con=mne_connectivity.spectral_connectivity_time(epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,faverage=False, mode='multitaper',mt_bandwidth = 3, verbose=False, n_cycles=n_cycles,freqs=freqs)
     coh = con.get_data(output='dense')
     #print(coh)
     indices = con.names
@@ -80,7 +80,7 @@ def convert_epoch_to_coherence_mt(epoch):
         fmax=band_dict[band][1]
         freqs = np.arange(fmin,fmax)
         #print(n_cycles)
-        con=mne_connectivity.spectral_connectivity_epochs(epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,faverage=True, mode='multitaper',mt_bandwidth = 2.0,mt_adaptive=True, mt_low_bias=True, verbose=False)
+        con=mne_connectivity.spectral_connectivity_epochs(epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,faverage=True, mode='multitaper',mt_bandwidth = 2.8,mt_adaptive=True, mt_low_bias=True, verbose=False)
         coh = con.get_data(output='dense')
         #print(coh)
         indices = con.names
@@ -193,17 +193,52 @@ def convert_epoch_to_coherence_behavior(epoch, band_start, band_end):
     n_cycles = freqs / 3
     con = mne_connectivity.spectral_connectivity_time(
         epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,
-        faverage=True, mode='multitaper',mt_bandwidth=2.0, verbose=False, n_cycles=n_cycles, freqs=freqs
+        faverage=True, mode='multitaper',mt_bandwidth=2.8, verbose=False, n_cycles=n_cycles, freqs=freqs
     )
     coh = con.get_data(output='dense')
     indices = con.names
     aon_vhp_con = []
-
+    print(indices)
     for i in range(coh.shape[1]):
         for j in range(coh.shape[2]):
             if 'AON' in indices[i] and 'vHp' in indices[j]:
+                print('AON and vHp found')
                 coherence= coh[0, i, j, :]
                 coherence = np.arctanh(coherence)  # Convert to Fisher Z-score
+                print(coherence)
+                aon_vhp_con.append(coherence)
+
+    if not aon_vhp_con:  # If the list is empty
+        print('No coherence found')
+        aon_vhp_con_mean = np.zeros_like(freqs)  # Assign a default value (e.g., zeros)
+    else:
+        aon_vhp_con_mean = np.mean(aon_vhp_con, axis=0)
+
+    return aon_vhp_con_mean[0]
+
+def convert_epoch_to_coherence_baseline(epoch, band_start, band_end):
+    fmin = band_start
+    fmax = band_end
+    freqs = np.arange(fmin, fmax)
+    n_cycles = freqs / 3
+    con = mne_connectivity.spectral_connectivity_time(
+        epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,
+        faverage=True, mode='multitaper',mt_bandwidth=3, verbose=False, n_cycles=n_cycles, freqs=freqs
+    )
+    coh = con.get_data(output='dense')
+    #print(coh[0,2,0,:])
+    #print(coh.shape, 'coherence shape') # Output shape (times, channels, channels, frequencies)
+    indices = con.names
+    aon_vhp_con = []
+    #print(indices)
+    for i in range(coh.shape[1]):
+        for j in range(coh.shape[2]):
+            if 'AON' in indices[i] and 'vHp' in indices[j]:
+                print('AON and vHp found', i, j)
+                coherence= coh[0,j, i,:]
+
+                coherence = np.arctanh(coherence)  # Convert to Fisher Z-score
+                print(coherence)
                 aon_vhp_con.append(coherence)
 
     if not aon_vhp_con:  # If the list is empty
