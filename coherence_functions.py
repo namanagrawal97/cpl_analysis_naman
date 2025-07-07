@@ -184,6 +184,39 @@ def convert_epoch_to_coherence_time(epoch):
             coherence_dict[band]=aon_vhp_con_mean
     return coherence_dict
 
+def convert_epoch_to_phase_behavior(epoch, band_start, band_end):
+    fmin = band_start
+    fmax = band_end
+    freqs = np.arange(fmin, fmax)
+    n_cycles = freqs / 3
+    con = mne_connectivity.spectral_connectivity_time(
+        epoch, method='pli', sfreq=int(2000), fmin=fmin, fmax=fmax,
+        faverage=True, mode='multitaper',mt_bandwidth=2.8, verbose=False, n_cycles=n_cycles, freqs=freqs
+    )
+    print(con)
+    coh = con.get_data(output='dense')
+    print(coh.shape, 'coherence shape')  # Output shape (times, channels, channels, frequencies)
+
+    indices = con.names
+    aon_vhp_con = []
+    print(indices)
+    for i in range(coh.shape[1]):
+        for j in range(coh.shape[2]):
+            if 'AON' in indices[i] and 'vHp' in indices[j]:
+                print('AON and vHp found')
+                coherence= coh[0, i, j, :]
+                print(coherence)
+                aon_vhp_con.append(coherence)
+
+    if not aon_vhp_con:  # If the list is empty
+        print('No coherence found')
+        aon_vhp_con_mean = np.zeros_like(freqs)  # Assign a default value (e.g., zeros)
+    else:
+        aon_vhp_con_mean = np.mean(aon_vhp_con, axis=0)
+
+    return aon_vhp_con_mean[0]
+
+
 
 
 def convert_epoch_to_coherence_behavior(epoch, band_start, band_end):
@@ -234,15 +267,15 @@ def convert_epoch_to_coherence_baseline(epoch, band_start, band_end):
     for i in range(coh.shape[1]):
         for j in range(coh.shape[2]):
             if 'AON' in indices[i] and 'vHp' in indices[j]:
-                print('AON and vHp found', i, j)
+                #print('AON and vHp found', i, j)
                 coherence= coh[0,j, i,:]
 
                 coherence = np.arctanh(coherence)  # Convert to Fisher Z-score
-                print(coherence)
+                #print(coherence)
                 aon_vhp_con.append(coherence)
 
     if not aon_vhp_con:  # If the list is empty
-        print('No coherence found')
+        #print('No coherence found')
         aon_vhp_con_mean = np.zeros_like(freqs)  # Assign a default value (e.g., zeros)
     else:
         aon_vhp_con_mean = np.mean(aon_vhp_con, axis=0)
