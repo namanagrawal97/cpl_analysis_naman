@@ -2,13 +2,21 @@ import numpy as np
 from scipy import signal
 import scipy.signal
 import pandas as pd
+
 def apply_welch_transform(data_array):
     print(data_array.shape)
     length= data_array.shape[0]
     if length < 2:
         raise ValueError("Data array must have at least two elements for Welch's method.")
     if length % 2 != 0:
-        raise ValueError("Data array length must be even for Welch's method.")
+#        raise ValueError("Data array length must be even for Welch's method.")
+        #data_array = np.pad(data_array, (0, 1), mode='constant', constant_values=0)
+        print("Data array length was odd, padded to even length:", data_array.shape)
+        data_array=data_array[:-1]  # Remove the last element to make it even
+        nperseg = length // 2
+        tukey_window = scipy.signal.get_window(('tukey', 0.2), nperseg)
+        data_arrary_welch=scipy.signal.welch(data_array, fs=2000, nperseg=nperseg,noverlap=nperseg//2, window=tukey_window)
+        return data_arrary_welch[1]
     else:
         nperseg = length // 2
         tukey_window = scipy.signal.get_window(('tukey', 0.2), nperseg)
