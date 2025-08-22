@@ -87,14 +87,22 @@ def find_global_start_end_times(f,channels):
             raw_time = np.array(data_all['times']).flatten()
             global_start_time = min(global_start_time, raw_time[0])
             global_end_time = max(global_end_time, raw_time[-1])
+    print(f'Global start time: {global_start_time}, Global end time: {global_end_time}')
     return global_start_time, global_end_time
 
 def pad_raw_data_raw_time(data, time, global_start_time, global_end_time, sampling_rate=2000):
     
     total_points = int((global_end_time - global_start_time) * sampling_rate) + 1
+    print(total_points)
     padded_data = np.zeros(total_points)
     start_index = int((time[0] - global_start_time) * sampling_rate)
     end_index = start_index + len(data)
+        # Safety check
+    if end_index > total_points:
+        print(f"Warning: Data length ({len(data)}) exceeds available space. Truncating.")
+        end_index = total_points
+        data = data[:total_points - start_index]  # Truncate data
+    print(f'start_index: {start_index}, end_index: {end_index}')
     padded_data[start_index:end_index] = data
     padded_time = np.linspace(global_start_time, global_end_time, total_points)
     return padded_data, padded_time
