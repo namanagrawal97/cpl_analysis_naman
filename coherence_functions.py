@@ -254,9 +254,13 @@ def convert_epoch_to_coherence_baseline(epoch, band_start, band_end):
     fmax = band_end
     freqs = np.arange(fmin, fmax)
     n_cycles = freqs / 3
+    # con = mne_connectivity.spectral_connectivity_time(
+    #     epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,
+    #     faverage=True, mode='multitaper',mt_bandwidth=3, verbose=False, freqs=freqs, n_cycles=n_cycles
+    # )
     con = mne_connectivity.spectral_connectivity_time(
         epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,
-        faverage=True, mode='multitaper',mt_bandwidth=3, verbose=False, freqs=freqs, n_cycles=n_cycles
+        faverage=True, mode='multitaper',mt_bandwidth=2.8, verbose=False, freqs=freqs, n_cycles=n_cycles
     )
     coh = con.get_data(output='dense')
     #print(coh[0,2,0,:])
