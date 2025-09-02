@@ -24,7 +24,7 @@ def apply_welch_transform(data_array):
         return data_arrary_welch[1]
 
 def get_band_power(data, band_start, band_end):
-    freq_axs = np.linspace(0, 1000, len(data))
+    freq_axs = np.linspace(0, 100, len(data))
     band_data = data[(freq_axs >= band_start) & (freq_axs <= band_end)]
     power_sum = np.sum(band_data)
     freq_diff = freq_axs[1] - freq_axs[0]
@@ -52,8 +52,8 @@ def get_band_power_mt(data, band_start, band_end):
     power_sum = np.sum(band_data)
     freq_diff = freq_axs[1] - freq_axs[0]
     band_power_linear = power_sum * freq_diff
-    decibel_power = 10*np.log10(band_power_linear)
-    return decibel_power
+    #decibel_power = 10*np.log10(band_power_linear)
+    return band_power_linear
 
 def get_all_band_power_from_mt(df, event_list):
     new_boxplot_df = df.copy()
