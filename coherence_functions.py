@@ -1,4 +1,5 @@
 import numpy as np
+import pandas as pd
 import mne_connectivity
 
 def convert_epoch_to_coherence_density(epoch, fmin=1, fmax=100, tanh_norm=True):
@@ -110,6 +111,192 @@ def convert_epoch_to_coherence_mt(epoch, tanh_norm = True):
             #print(aon_vhp_con_mean, 'coherenece')
             coherence_dict[band]=aon_vhp_con_mean
     return coherence_dict
+def convert_epochs_to_coherence_mt_expanded(epochs_series, rat_ids, tasks, columns_to_process, tanh_norm=True, fmin=1, fmax=100, fs=2000):
+    """
+    Convert multiple columns of pandas Series containing MNE epochs to coherence values in melted DataFrame format.
+    
+    Parameters:
+    -----------
+    epochs_series : pd.DataFrame
+        DataFrame containing MNE epoch objects in specified columns
+    rat_ids : pd.Series
+        Series containing rat IDs corresponding to each epoch
+    tasks : pd.Series
+        Series containing task identifiers corresponding to each epoch
+    columns_to_process : list
+        List of column names containing MNE epoch objects to process
+    tanh_norm : bool
+        Whether to apply Fisher Z-transformation (arctanh)
+    fmin, fmax : int
+        Frequency range
+    fs : int
+        Sampling frequency
+        
+    Returns:
+    --------
+    pd.DataFrame
+        DataFrame with columns: ['epoch_idx', 'rat_id', 'task', 'event_type', 'channel_pair', 'frequency_band', 'coherence']
+    """
+    
+    band_dict = {'beta': [12, 30], 'gamma': [30, 80], 'total': [1, 100], 'theta': [4, 12]}
+    all_results = []
+    
+    for epoch_idx in range(len(epochs_series)):
+        # Get rat_id and task for this epoch
+        rat_id = rat_ids.iloc[epoch_idx] if epoch_idx < len(rat_ids) else None
+        task = tasks.iloc[epoch_idx] if epoch_idx < len(tasks) else None
+        
+        # Process each specified column
+        for column_name in columns_to_process:
+            epoch = epochs_series[column_name].iloc[epoch_idx]
+            
+            if epoch is None:
+                continue
+                
+            epoch_results = {}
+            
+            for band, (band_fmin, band_fmax) in band_dict.items():
+                try:
+                    con = mne_connectivity.spectral_connectivity_epochs(
+                        epoch, method='coh', sfreq=int(fs), 
+                        fmin=band_fmin, fmax=band_fmax, faverage=True, 
+                        mode='multitaper', mt_bandwidth=2.8, mt_adaptive=True, 
+                        mt_low_bias=True, verbose=False, n_jobs=-1
+                    )
+                    coh = con.get_data(output='dense')
+                    indices = con.names
+                    
+                    # Find all AON-vHp channel pairs
+                    for i in range(coh.shape[0]):
+                        for j in range(coh.shape[1]):
+                            if 'AON' in indices[j] and 'vHp' in indices[i]:
+                                channel_pair = f'{indices[i]}-{indices[j]}'
+                                coherence = coh[i, j, :]
+                                
+                                if tanh_norm:
+                                    coherence = np.arctanh(coherence)
+                                
+                                coherence_mean = np.mean(coherence)
+                                
+                                # Store in nested dict structure
+                                if channel_pair not in epoch_results:
+                                    epoch_results[channel_pair] = {}
+                                epoch_results[channel_pair][band] = coherence_mean
+                                
+                except Exception as e:
+                    print(f"Error processing epoch {epoch_idx}, column {column_name}, band {band}: {e}")
+                    continue
+            
+            # Convert epoch results to melted format
+            for channel_pair, band_values in epoch_results.items():
+                for band, coherence_value in band_values.items():
+                    row = {
+                        'epoch_idx': epoch_idx, 
+                        'rat_id': rat_id,
+                        'task': task,
+                        'event_type': column_name,  # Added event type to distinguish between columns
+                        'channel_pair': channel_pair,
+                        'frequency_band': band,
+                        'coherence': coherence_value
+                    }
+                    all_results.append(row)
+    
+    return pd.DataFrame(all_results)
+
+def convert_baseline_to_coherence_mt_expanded(epochs_series, rat_ids, tasks, columns_to_process, tanh_norm=True, fmin=1, fmax=100, fs=2000):
+    """
+    Convert multiple columns of pandas Series containing MNE epochs to coherence values in melted DataFrame format.
+    
+    Parameters:
+    -----------
+    epochs_series : pd.DataFrame
+        DataFrame containing MNE epoch objects in specified columns
+    rat_ids : pd.Series
+        Series containing rat IDs corresponding to each epoch
+    tasks : pd.Series
+        Series containing task identifiers corresponding to each epoch
+    columns_to_process : list
+        List of column names containing MNE epoch objects to process
+    tanh_norm : bool
+        Whether to apply Fisher Z-transformation (arctanh)
+    fmin, fmax : int
+        Frequency range
+    fs : int
+        Sampling frequency
+        
+    Returns:
+    --------
+    pd.DataFrame
+        DataFrame with columns: ['epoch_idx', 'rat_id', 'task', 'event_type', 'channel_pair', 'frequency_band', 'coherence']
+    """
+    
+    band_dict = {'beta': [12, 30], 'gamma': [30, 80], 'total': [1, 100], 'theta': [4, 12]}
+    all_results = []
+    
+    for epoch_idx in range(len(epochs_series)):
+        # Get rat_id and task for this epoch
+        rat_id = rat_ids.iloc[epoch_idx] if epoch_idx < len(rat_ids) else None
+        task = tasks.iloc[epoch_idx] if epoch_idx < len(tasks) else None
+        
+        # Process each specified column
+        for column_name in columns_to_process:
+            epoch = epochs_series[column_name].iloc[epoch_idx]
+            
+            if epoch is None:
+                continue
+                
+            epoch_results = {}
+            
+            for band, (band_fmin, band_fmax) in band_dict.items():
+                try:
+                    fmin = band_fmin
+                    fmax = band_fmax
+                    freqs = np.arange(fmin, fmax)
+                    n_cycles = freqs / 3
+                    con = mne_connectivity.spectral_connectivity_time(
+                            epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,
+                            faverage=True, mode='multitaper',mt_bandwidth=3, verbose=False, freqs=freqs, n_cycles=n_cycles
+                        )
+                    coh = con.get_data(output='dense')
+                    #print(coh[0,2,0,:])
+                    #print(coh.shape, 'coherence shape') # Output shape (times, channels, channels, frequencies)
+                    indices = con.names
+                    # Find all AON-vHp channel pairs
+                    for i in range(coh.shape[1]):
+                        for j in range(coh.shape[2]):
+                            if 'AON' in indices[i] and 'vHp' in indices[j]:
+                                #print('AON and vHp found', i, j)
+                                channel_pair = f'{indices[j]}-{indices[i]}'
+                                coherence= coh[0,j, i,:]
+                                if tanh_norm:
+                                    coherence = np.arctanh(coherence)  # Convert to Fisher Z-score
+                                                
+                                coherence_mean = np.mean(coherence)
+                                
+                                # Store in nested dict structure
+                                if channel_pair not in epoch_results:
+                                    epoch_results[channel_pair] = {}
+                                epoch_results[channel_pair][band] = coherence_mean
+                                
+                except Exception as e:
+                    print(f"Error processing epoch {epoch_idx}, column {column_name}, band {band}: {e}")
+                    continue
+            
+            # Convert epoch results to melted format
+            for channel_pair, band_values in epoch_results.items():
+                for band, coherence_value in band_values.items():
+                    row = {
+                        'epoch_idx': epoch_idx, 
+                        'rat_id': rat_id,
+                        'task': task,
+                        'event_type': column_name,  # Added event type to distinguish between columns
+                        'channel_pair': channel_pair,
+                        'frequency_band': band,
+                        'coherence': coherence_value
+                    }
+                    all_results.append(row)
+    
+    return pd.DataFrame(all_results)
 
 def convert_epoch_to_coherence_fourier(epoch, tanh_norm = True):
     band_dict={'beta':[12,30],'gamma':[30,80],'total':[1,100], 'theta':[4,12]}
