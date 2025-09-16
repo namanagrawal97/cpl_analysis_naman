@@ -1,0 +1,85 @@
+📁 results/paper/data sheets and figures 250914/
+│
+├── 📁 baseline power/
+│   ├── pow_baseline_perband.xlsx                  
+│   ├── pow_baseline_perband.png                    
+│   ├── pow_baseline_psd.csv                       
+│   └── pow_baseline_psd.png                        
+│
+├── 📁 baseline coherence/
+│   ├── 📁 combined/
+│   │   ├── coh_baseline_density_combined.xlsx     
+│   │   └── coh_baseline_perband_channelpair_combined.xls
+│   │
+│   ├── 📁 normalized/
+│   │   ├── coh_baseline_density_normalized.xlsx   
+│   │   ├── coh_baseline_density_normalized.png     
+│   │   └── coh_baseline_perband_channelpair_normalized.xls
+│   │
+│   └── 📁 non normalized/
+│       ├── coh_baseline_density_nonnormalized.xlsx
+│       ├── coh_baseline_density_nonnormalized.png  
+│       └── coh_baseline_perband_channelpair_nonnormalized.xls
+│
+├── 📁 events power/
+│   ├── pow_events_perband.xlsx                     
+│   ├── pow_events_perband.png                      
+│   ├── pow_events_psd.xlsx                         
+│   └── pow_events_psd.png                          
+│
+├── 📁 events coherence/
+│   ├── 📁 combined_400ms/
+│   │   ├── coh_events_perband_channelpair_combined_400ms.xlsx
+│   │   └── coh_events_perband_channelpair_combined_400ms_shuffled.xlsx
+│   │
+│   ├── 📁 combined_700ms/
+│   │   ├── coh_events_perband_channelpair_combined_700ms.xlsx
+│   │   └── coh_events_perband_channelpair_combined_700ms_shuffled.xlsx
+│   │
+│   ├── 📁 normalized_400ms/
+│   │   ├── coh_events_spectrogram_averaged_normalized_400ms.png
+│   │   ├── coh_events_spectrogram_perexp_context_normalized_400ms.png
+│   │   ├── coh_events_spectrogram_perexp_nocontext_normalized_400ms.png
+│   │   ├── coh_events_perband_channelpair_normalized_400ms.png
+│   │   ├── coh_events_perband_channelpair_normalized_400ms_shuffled.png
+│   │   ├── coh_events_spectrogram_perexp_normalized_400ms.xlsx
+│   │   ├── coh_events_spectrogram_averaged_normalized_400ms.xlsx
+│   │   ├── coh_events_perband_channelpair_normalized_400ms.xlsx
+│   │   └── coh_events_perband_channelpair_normalized_400ms_shuffled.xlsx
+│   │
+│   ├── 📁 normalized_700ms/
+│   │   ├── coh_events_spectrogram_aonvhp_normalized_700ms.png
+│   │   ├── coh_events_spectrogram_context_normalized_700ms.png
+│   │   ├── coh_events_spectrogram_nocontext_normalized_700ms.png
+│   │   ├── coh_events_channelpair_normalized_700ms.png
+│   │   ├── coh_events_channelpair_normalized_700ms_shuffled.png
+│   │   ├── coh_events_spectrogram_perexp_normalized_700ms.xlsx 
+│   │   ├── coh_events_spectrogram_normalized_700ms.xls
+│   │   ├── coh_events_perband_channelpair_normalized_700ms.xlsx
+│   │   └── coh_events_perband_channelpair_normalized_700ms_shuffled.xlsx
+│   │
+│   ├── 📁 nonnormalized_400ms/
+│   │   ├── coh_events_spectrogram_aonvhp_nonnormalized_400ms.png
+│   │   ├── coh_events_spectrogram_context_nonnormalized_400ms.png
+│   │   ├── coh_events_spectrogram_nocontext_nonnormalized_400ms.png
+│   │   ├── coh_events_channelpair_nonnormalized_400ms.png
+│   │   ├── coh_events_channelpair_nonnormalized_400ms_shuffled.png
+│   │   ├── coh_events_spectrogram_perexp_nonnormalized_400ms.xlsx 
+│   │   ├── coh_events_spectrogram_nonnormalized_400ms.xlsx
+│   │   ├── coh_events_perband_channelpair_nonnormalized_400ms.xlsx
+│   │   └── coh_events_perband_channelpair_nonnormalized_400ms_shuffled.xlsx
+│   │
+│   └── 📁 nonnormalized_700ms/
+│       ├── coh_events_spectrogram_aonvhp_nonnormalized_700ms.png
+│       ├── coh_events_spectrogram_context_nonnormalized_700ms.png
+│       ├── coh_events_spectrogram_nocontext_nonnormalized_700ms.png
+│       ├── coh_events_channelpair_nonnormalized_700ms.png
+│       ├── coh_events_channelpair_nonnormalized_700ms_shuffled.png
+│       ├── coh_events_spectrogram_perexp_nonnormalized_700ms.xlsx 
+│       ├── coh_events_spectrogram_nonnormalized_700ms.xls
+│       ├── coh_events_perband_channelpair_nonnormalized_700ms.xlsx
+│       └── coh_events_perband_channelpair_nonnormalized_700ms_shuffled.xlsx
+│
+└── 📁 behavior coherence/
+    ├── beh_dig_coh_compiled_700ms.xlsx             
+    └── beh_dig_beta_spectrogram_700ms.png          
