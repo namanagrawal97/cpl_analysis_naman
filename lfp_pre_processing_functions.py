@@ -1,5 +1,5 @@
 import numpy as np
-from scipy.signal import iirnotch, filtfilt
+from scipy.signal import iirnotch, filtfilt, butter, sosfiltfilt
 
 def exp_params(string):
     """
@@ -141,6 +141,24 @@ def iir_notch(data, fs, frequency, quality=30., axis=-1):
     y = filtfilt(b, a, data, padlen=0, axis=axis)
     print('notch filter applied')
     return y
+def bandpass(data, fs, start_freq, end_freq, order=30):
+    b, a = butter(N=order,Wn=[start_freq, end_freq], fs=fs, btype='bandpass')
+    y = filtfilt(b, a, data, padlen=0)
+    print(f'band pass filter applied between {start_freq}Hz and {end_freq}Hz')
+    return y
+
+def highpass(data, fs, start_freq, order=30):
+    b, a = butter(N=order,Wn=start_freq, fs=fs, btype='highpass')
+    y = filtfilt(b, a, data, padlen=0)
+    print(f'highpass filter applied from {start_freq}Hz')
+    return y
+
+def soshighpass(data, fs, start_freq, order=30):
+    sos = butter(N=order, Wn=start_freq, fs=fs, btype='highpass', output='sos')
+    y = sosfiltfilt(sos, data, padlen=0)
+    print(f'highpass filter applied from {start_freq}Hz')
+    return y
+
 def zscore_event_data(data, baseline_std):
     data_mean=np.mean(data)
     data_zscored = (data - data_mean) / baseline_std
