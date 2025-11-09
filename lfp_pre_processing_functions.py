@@ -159,6 +159,12 @@ def soshighpass(data, fs, start_freq, order=30):
     print(f'highpass filter applied from {start_freq}Hz')
     return y
 
+def sosbandpass(data, fs, start_freq, end_freq,order=30):
+    sos = butter(N=order, Wn=[start_freq,end_freq], fs=fs, btype='bandpass', output='sos')
+    y = sosfiltfilt(sos, data, padlen=0)
+    print(f'bandpass filter applied from {start_freq}Hz to {end_freq}Hz')
+    return y
+
 def zscore_event_data(data, baseline_std):
     data_mean=np.mean(data)
     data_zscored = (data - data_mean) / baseline_std
