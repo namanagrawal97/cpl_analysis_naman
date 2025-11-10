@@ -161,7 +161,7 @@ def soshighpass(data, fs, start_freq, order=30):
 
 def sosbandpass(data, fs, start_freq, end_freq,order=30):
     sos = butter(N=order, Wn=[start_freq,end_freq], fs=fs, btype='bandpass', output='sos')
-    y = sosfiltfilt(sos, data, padlen=0)
+    y = sosfiltfilt(sos, data)
     print(f'bandpass filter applied from {start_freq}Hz to {end_freq}Hz')
     return y
 
