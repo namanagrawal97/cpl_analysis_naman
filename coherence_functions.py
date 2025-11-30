@@ -1,7 +1,20 @@
 import numpy as np
 import pandas as pd
 import mne_connectivity
+import mne
 
+def randomize_timepoints(epochs, seed=None):
+    """Shuffle time points independently for each channel and epoch."""
+    rng = np.random.default_rng(seed)
+    data = epochs.get_data()
+    randomized_data = data.copy()
+    
+    for epoch_idx in range(randomized_data.shape[0]):
+        for channel_idx in range(randomized_data.shape[1]):
+            rng.shuffle(randomized_data[epoch_idx, channel_idx, :])
+    
+    return mne.EpochsArray(randomized_data, epochs.info, 
+                          events=epochs.events, tmin=epochs.tmin)
 def convert_epoch_to_coherence_density(epoch, fmin=1, fmax=100, tanh_norm=True):
 
     freqs = np.arange(fmin,fmax)
@@ -35,11 +48,12 @@ def convert_epoch_to_coherence_density(epoch, fmin=1, fmax=100, tanh_norm=True):
     return aon_vhp_con_mean
 
 
-def convert_epoch_to_coherence(epoch, tanh_norm = True):
+def convert_epoch_to_coherence(epoch, tanh_norm = True, shuffle=False):
     band_dict={'beta':[12,30],'gamma':[30,80],'total':[1,100], 'theta':[4,12]}
     coherence_dict={}
     for band in band_dict.keys():
-
+        if shuffle:
+            epoch=randomize_timepoints(epoch, seed=42)
         fmin=band_dict[band][0]
         fmax=band_dict[band][1]
         freqs = np.arange(fmin,fmax)
@@ -74,8 +88,8 @@ def convert_epoch_to_coherence(epoch, tanh_norm = True):
             coherence_dict[band]=aon_vhp_con_mean
     return coherence_dict
 
-def convert_epoch_to_coherence_mt(epoch, tanh_norm = True):
-    band_dict={'beta':[12,30],'gamma':[30,80],'total':[1,100], 'theta':[4,12]}
+def convert_epoch_to_coherence_mt(epoch, tanh_norm = True, shuffle=False):
+    band_dict={'beta':[12,30],'gamma':[30,80],'total':[1,100], 'theta':[4,12], 'theta+beta':[4,30]}
     coherence_dict={}
     for band in band_dict.keys():
 
@@ -83,7 +97,9 @@ def convert_epoch_to_coherence_mt(epoch, tanh_norm = True):
         fmax=band_dict[band][1]
         freqs = np.arange(fmin,fmax)
         #print(n_cycles)
-        con=mne_connectivity.spectral_connectivity_epochs(epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,faverage=True, mode='multitaper',mt_bandwidth = 2.8,mt_adaptive=True, mt_low_bias=True, verbose=False, n_jobs=-1)
+        if shuffle:
+            epoch = randomize_timepoints(epoch, seed=42)
+        con=mne_connectivity.spectral_connectivity_epochs(epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,faverage=True, mode='multitaper',mt_bandwidth = 2.8,mt_adaptive=True, mt_low_bias=True, verbose=False)
         coh = con.get_data(output='dense')
         #print(coh)
         indices = con.names
@@ -111,7 +127,7 @@ def convert_epoch_to_coherence_mt(epoch, tanh_norm = True):
             #print(aon_vhp_con_mean, 'coherenece')
             coherence_dict[band]=aon_vhp_con_mean
     return coherence_dict
-def convert_epochs_to_coherence_mt_expanded(epochs_series, rat_ids, tasks, columns_to_process, tanh_norm=True, fmin=1, fmax=100, fs=2000):
+def convert_epochs_to_coherence_mt_expanded(epochs_series, rat_ids, tasks, columns_to_process, tanh_norm=True,shuffle=False, fmin=1, fmax=100, fs=2000):
     """
     Convert multiple columns of pandas Series containing MNE epochs to coherence values in melted DataFrame format.
     
@@ -138,7 +154,7 @@ def convert_epochs_to_coherence_mt_expanded(epochs_series, rat_ids, tasks, colum
         DataFrame with columns: ['epoch_idx', 'rat_id', 'task', 'event_type', 'channel_pair', 'frequency_band', 'coherence']
     """
     
-    band_dict = {'beta': [12, 30], 'gamma': [30, 80], 'total': [1, 100], 'theta': [4, 12]}
+    band_dict = {'beta': [12, 30], 'gamma': [30, 80], 'total': [1, 100], 'theta': [4, 12], 'theta+beta': [4, 30]}
     all_results = []
     
     for epoch_idx in range(len(epochs_series)):
@@ -152,7 +168,8 @@ def convert_epochs_to_coherence_mt_expanded(epochs_series, rat_ids, tasks, colum
             
             if epoch is None:
                 continue
-                
+            if shuffle:
+                epoch=randomize_timepoints(epoch, seed=42)    
             epoch_results = {}
             
             for band, (band_fmin, band_fmax) in band_dict.items():
@@ -286,7 +303,7 @@ def convert_baseline_to_coherence_mt_expanded(epochs_series, rat_ids, tasks, col
             for channel_pair, band_values in epoch_results.items():
                 for band, coherence_value in band_values.items():
                     row = {
-                        'epoch_idx': epoch_idx, 
+                        'experiment_num': epoch_idx, 
                         'rat_id': rat_id,
                         'task': task,
                         'event_type': column_name,  # Added event type to distinguish between columns
