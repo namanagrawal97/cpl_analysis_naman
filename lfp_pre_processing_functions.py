@@ -1,5 +1,6 @@
 import numpy as np
 from scipy.signal import iirnotch, filtfilt, butter, sosfiltfilt
+import mne
 
 def exp_params(string):
     """
@@ -169,3 +170,16 @@ def zscore_event_data(data, baseline_std):
     data_mean=np.mean(data)
     data_zscored = (data - data_mean) / baseline_std
     return data_zscored
+
+def randomize_timepoints(epochs, seed=None):
+    """Shuffle time points independently for each channel and epoch."""
+    rng = np.random.default_rng(seed)
+    data = epochs.get_data()
+    randomized_data = data.copy()
+    
+    for epoch_idx in range(randomized_data.shape[0]):
+        for channel_idx in range(randomized_data.shape[1]):
+            rng.shuffle(randomized_data[epoch_idx, channel_idx, :])
+    
+    return mne.EpochsArray(randomized_data, epochs.info, 
+                          events=epochs.events, tmin=epochs.tmin)
