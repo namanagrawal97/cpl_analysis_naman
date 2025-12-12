@@ -70,3 +70,37 @@ def get_all_band_power_from_mt(df, event_list):
             new_boxplot_df[band + '_' + col] = df[col].apply(lambda x: get_band_power_mt(x, band_start, band_end))
     new_boxplot_df = new_boxplot_df.drop(columns=event_list)
     return new_boxplot_df
+def calculate_band_power(psd, freqs, fmin, fmax):
+    """Calculate average power in a frequency band"""
+    freq_mask = (freqs >= fmin) & (freqs <= fmax)
+    if np.sum(freq_mask) == 0:
+        return np.nan
+    return np.mean(psd[freq_mask])
+
+def convert_epoch_to_power(epoch, band_start, band_end, brain_area):
+    
+    channel_names = epoch.ch_names
+    
+    channel_picks = [channel for channel in channel_names if brain_area in channel]
+    print(channel_picks)
+    epoch_psd = epoch.compute_psd(
+    method='multitaper', 
+    fmin=0, 
+    fmax=100, 
+    adaptive=True, 
+    bandwidth=6, 
+    normalization='full', 
+    verbose=0,
+    picks = channel_picks,
+    output='power',
+    exclude=['Ref'])
+    
+    psd_array = epoch_psd.get_data()[0]
+    freqs = epoch_psd.freqs
+    print(psd_array.shape, freqs)
+    
+    band_power = calculate_band_power(np.mean(psd_array, axis=0), freqs, fmin=band_start, fmax=band_end)
+    
+    return band_power
+    
+    
