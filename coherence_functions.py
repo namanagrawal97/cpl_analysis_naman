@@ -247,7 +247,7 @@ def convert_baseline_to_coherence_mt_expanded(epochs_series, rat_ids, tasks, col
         DataFrame with columns: ['epoch_idx', 'rat_id', 'task', 'event_type', 'channel_pair', 'frequency_band', 'coherence']
     """
     
-    band_dict = {'beta': [12, 30], 'gamma': [30, 80], 'total': [1, 100], 'theta': [4, 12]}
+    band_dict = {'theta': [4, 12],'beta': [12, 30], 'gamma': [30, 80], 'total': [1, 100]}
     all_results = []
     
     for epoch_idx in range(len(epochs_series)):
