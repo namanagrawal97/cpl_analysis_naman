@@ -31,7 +31,7 @@ def convert_epoch_to_coherence_density(epoch, fmin=1, fmax=100, tanh_norm=True):
             print(i,j)
             if 'AON' in indices[j] and 'vHp' in indices[i]:
                 print('AON and vHp found')
-                coherence= coh[0,i,j,:]
+                coherence= coh[0,i,j,:] #Takes just the first epoch
                 if tanh_norm:
                     coherence=np.arctanh(coherence)  # Convert to Fisher Z-score
                 aon_vhp_con.append(coherence)
@@ -127,6 +127,42 @@ def convert_epoch_to_coherence_mt(epoch, tanh_norm = True, shuffle=False):
             #print(aon_vhp_con_mean, 'coherenece')
             coherence_dict[band]=aon_vhp_con_mean
     return coherence_dict
+
+def convert_event_epoch_to_coherence_density_mt(epoch,shuffle, fmin=1,fmax=100 ,tanh_norm = True):
+
+    freqs = np.arange(fmin,fmax)
+    #print(n_cycles)
+    if shuffle:
+        epoch = randomize_timepoints(epoch, seed=42)
+    con=mne_connectivity.spectral_connectivity_epochs(epoch, method='coh', sfreq=int(2000), fmin=fmin, fmax=fmax,faverage=False, mode='multitaper',mt_bandwidth = 2.8,mt_adaptive=True, mt_low_bias=True, verbose=False)
+    coh = con.get_data(output='dense')
+    #print(coh)
+    indices = con.names
+    #print(indices)
+    aon_vhp_con=[]
+    print(coh.shape)
+    for i in range(coh.shape[0]):
+        for j in range(coh.shape[1]):
+            #print(i,j)
+            if 'AON' in indices[j] and 'vHp' in indices[i]:
+                #print('AON and vHp found')
+                coherence = coh[i,j,:]
+                if tanh_norm:
+                    coherence=np.arctanh(coherence)  # Convert to Fisher Z-score
+                aon_vhp_con.append(coherence)
+                #print('freqs averaged',coh[i,j,0,:].shape)
+                #print(coh[0,i,j,:])
+            else:
+                continue
+    if aon_vhp_con==[]:
+        print('no coherence found')
+    else:
+        #print(aon_vhp_con)
+        aon_vhp_con_mean=np.mean(aon_vhp_con, axis=0)
+        #print(aon_vhp_con_mean, 'coherenece')
+#            coherence_dict[band]=aon_vhp_con_mean
+    return aon_vhp_con_mean
+
 def convert_epochs_to_coherence_mt_expanded(epochs_series, rat_ids, tasks, columns_to_process, tanh_norm=True,shuffle=False, fmin=1, fmax=100, fs=2000):
     """
     Convert multiple columns of pandas Series containing MNE epochs to coherence values in melted DataFrame format.
